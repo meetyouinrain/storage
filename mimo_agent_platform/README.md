@@ -1,0 +1,135 @@
+# MiMo Agent Platform
+
+一个面向研发自动化场景的多 Agent 协作平台 MVP。它把研发任务拆成 `需求分析 -> 任务规划 -> 编码建议 -> 测试建议 -> Review 审查` 五个阶段，并通过统一编排器串起来，适合用来做：
+
+- 代码仓库上下文理解
+- 长链路研发任务拆解
+- 多 Agent 协同输出
+- 自动化交付记录沉淀
+
+这个项目默认提供两种运行模式：
+
+- `mock`：不依赖任何外部模型，直接使用内置启发式逻辑，方便本地演示
+- `openai_compatible`：兼容 OpenAI 风格接口，配置后可以连接支持 Chat Completions 的模型服务
+
+## 项目结构
+
+```text
+mimo_agent_platform/
+  examples/
+  src/mimo_agent_platform/
+    agents/
+    cli.py
+    config.py
+    llm.py
+    models.py
+    orchestrator.py
+    repo_context.py
+  tests/
+  pyproject.toml
+```
+
+## 快速开始
+
+### 1. 安装
+
+在项目目录执行：
+
+```powershell
+python -m pip install -e .
+```
+
+### 2. 运行 Mock 模式
+
+```powershell
+python -m mimo_agent_platform.cli `
+  --task "为现有 Python Web 服务增加统一错误处理中间件，并补充测试建议" `
+  --repo . `
+  --provider mock `
+  --output run_result.json
+```
+
+运行完成后会输出：
+
+- 控制台摘要
+- 结构化 JSON 结果文件
+
+### 3. 运行 OpenAI Compatible 模式
+
+先设置环境变量：
+
+```powershell
+$env:MIMO_AGENT_PROVIDER="openai_compatible"
+$env:MIMO_AGENT_MODEL="gpt-4.1"
+$env:MIMO_AGENT_BASE_URL="https://api.openai.com/v1"
+$env:MIMO_AGENT_API_KEY="your_api_key"
+```
+
+然后执行：
+
+```powershell
+python -m mimo_agent_platform.cli `
+  --task "分析仓库中的登录流程，并给出重构计划与测试清单" `
+  --repo . `
+  --output run_result.json
+```
+
+## 核心能力
+
+### 1. 仓库上下文扫描
+
+- 遍历目录结构
+- 识别常见源码文件
+- 提取文件摘要、导入、函数/类定义
+- 限制扫描规模，避免上下文爆炸
+
+### 2. 多 Agent 分工
+
+- `RequirementAgent`：识别目标、约束、边界和风险
+- `PlanningAgent`：输出阶段化实施计划
+- `CodingAgent`：给出改动策略、候选文件、伪代码与实现建议
+- `TestingAgent`：生成测试策略、覆盖点、回归清单
+- `ReviewAgent`：从稳定性、性能、兼容性、可维护性角度做二次审查
+
+### 3. 统一编排
+
+`WorkflowOrchestrator` 会把任务、仓库上下文、前序 Agent 结果打包成共享状态，让后续 Agent 基于同一上下文继续推理。
+
+## 输出示例
+
+结果文件包含：
+
+- `task`
+- `repository_summary`
+- `artifacts.requirement_analysis`
+- `artifacts.execution_plan`
+- `artifacts.coding_plan`
+- `artifacts.testing_plan`
+- `artifacts.review_report`
+- `timeline`
+
+## 适合继续扩展的方向
+
+- 接入真实代码修改执行器
+- 增加命令执行沙箱
+- 对接 Git diff 和 PR 生成
+- 引入多轮反思和自动重试机制
+- 增加 Web UI 和任务队列
+
+## 测试
+
+```powershell
+python -m unittest discover -s tests -p "test_*.py"
+```
+
+## 示例申请文案映射
+
+这个项目直接对应你申请材料里提到的能力点：
+
+- 长上下文理解
+- 多 Agent 协作
+- 研发任务拆解
+- 测试与回归验证
+- 高频、多轮 Token 消耗
+
+所以你可以把它当作一个可以展示给别人看的原型项目，而不只是文字描述。
